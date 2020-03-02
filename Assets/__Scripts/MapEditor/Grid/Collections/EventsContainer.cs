@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -9,6 +11,7 @@ public class EventsContainer : BeatmapObjectContainerCollection
     [SerializeField] private GameObject eventGridLabels;
     [SerializeField] private GameObject ringPropagationLabels;
     [SerializeField] private TracksManager tracksManager;
+    [SerializeField] private BeatmapObjectCallbackController verticalGridCallback;
 
     public override BeatmapObject.Type ContainerType => BeatmapObject.Type.EVENT;
 
@@ -25,11 +28,14 @@ public class EventsContainer : BeatmapObjectContainerCollection
     }
     private bool ringPropagationEditing = false;
 
+    public Action<int> BPMChangeTriggeredEvent;
+
     internal override void SubscribeToCallbacks()
     {
         SpawnCallbackController.EventPassedThreshold += SpawnCallback;
         SpawnCallbackController.RecursiveEventCheckFinished += RecursiveCheckFinished;
         DespawnCallbackController.EventPassedThreshold += DespawnCallback;
+        verticalGridCallback.EventPassedThreshold += EventPassedThreshold;
         AudioTimeSyncController.OnPlayToggle += OnPlayToggle;
     }
 
@@ -37,6 +43,7 @@ public class EventsContainer : BeatmapObjectContainerCollection
         SpawnCallbackController.EventPassedThreshold -= SpawnCallback;
         SpawnCallbackController.RecursiveEventCheckFinished -= RecursiveCheckFinished;
         DespawnCallbackController.EventPassedThreshold -= DespawnCallback;
+        verticalGridCallback.EventPassedThreshold -= EventPassedThreshold;
         AudioTimeSyncController.OnPlayToggle -= OnPlayToggle;
     }
 
@@ -88,6 +95,16 @@ public class EventsContainer : BeatmapObjectContainerCollection
         catch { }
     }
 
+    void EventPassedThreshold(bool initial, int index, BeatmapObject objectData)
+    {
+        MapEvent e = objectData as MapEvent;
+        if (e._type == MapEvent.EVENT_TYPE_BPM_CHANGE)
+        {
+            Debug.Log($"We got a bpm change of {FindLastBPM()._value} BPM");
+            BPMChangeTriggeredEvent?.Invoke(e._value);
+        }
+    }
+
     //We don't need to check index as that's already done further up the chain
     void DespawnCallback(bool initial, int index, BeatmapObject objectData)
     {
@@ -108,12 +125,23 @@ public class EventsContainer : BeatmapObjectContainerCollection
                     && e.objectData._time >= AudioTimeSyncController.CurrentBeat + DespawnCallbackController.offset;
                 e.SafeSetActive(enabled);
             }
+            BPMChangeTriggeredEvent?.Invoke(FindLastBPM()._value);
         }
     }
 
     void RecursiveCheckFinished(bool natural, int lastPassedIndex)
     {
         OnPlayToggle(AudioTimeSyncController.IsPlaying);
+    }
+
+    public MapEvent FindLastBPM()
+    {
+        IEnumerable<MapEvent> bpmChanges = LoadedContainers.Select(x => x.objectData).Cast<MapEvent>().Where(x => x.IsBPMChangeEvent);
+        if (!bpmChanges.Any())
+        {
+            return new MapEvent(0, MapEvent.EVENT_TYPE_BPM_CHANGE, Mathf.RoundToInt(BeatSaberSongContainer.Instance.song.beatsPerMinute));
+        }
+        return bpmChanges.LastOrDefault(x => x._time <= AudioTimeSyncController.CurrentBeat);
     }
 
     public override BeatmapObjectContainer SpawnObject(BeatmapObject obj, out BeatmapObjectContainer conflicting, bool removeConflicting = false, bool refreshMap = true)

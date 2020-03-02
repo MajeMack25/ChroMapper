@@ -56,8 +56,15 @@ public class BeatSaberSong
             if (HasChromaEvents(map)) suggestedArray.Add(new JSONString("Chroma Lighting Events"));
             if (HasMappingExtensions(map)) requiredArray.Add(new JSONString("Mapping Extensions"));
             if (HasChromaToggle(map)) requiredArray.Add(new JSONString("ChromaToggle"));
-            customData["_warnings"] = suggestedArray;
-            customData["_requirements"] = requiredArray;
+            if (requiredArray.Count > 0 || suggestedArray.Count > 0)
+            {
+                if (customData == null)
+                {
+                    customData = new JSONObject();
+                }
+                customData["_warnings"] = suggestedArray;
+                customData["_requirements"] = requiredArray;
+            }
         }
 
         private bool HasChromaEvents(BeatSaberMap map)
