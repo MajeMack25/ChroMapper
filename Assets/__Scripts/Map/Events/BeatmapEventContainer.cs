@@ -78,8 +78,8 @@ public class BeatmapEventContainer : BeatmapObjectContainer {
     }
 
 
-    private static int[] ModifiedToEventArray = { 14, 15, 0, 1, 2, 3, 4, 8, 9, 12, 13, 5, 6, 7, 10, 11 };
-    private static int[] EventToModifiedArray = { 2, 3, 4, 5, 6, 11, 12, 13, 7, 8, 14, 15, 9, 10, 0, 1 };
+    private static int[] ModifiedToEventArray = { 14, 15, 10, 0, 1, 2, 3, 4, 8, 9, 12, 13, 5, 6, 7, 11 };
+    private static int[] EventToModifiedArray = null;
     private static readonly int ColorTint = Shader.PropertyToID("_ColorTint");
     private static readonly int Position = Shader.PropertyToID("_Position");
     private static readonly int MainAlpha = Shader.PropertyToID("_MainAlpha");
@@ -91,6 +91,14 @@ public class BeatmapEventContainer : BeatmapObjectContainer {
     /// <returns></returns>
     public static int EventTypeToModifiedType(int eventType)
     {
+        if (EventToModifiedArray == null)
+        {
+            EventToModifiedArray = new int[ModifiedToEventArray.Length];
+            for (int i = 0; i < ModifiedToEventArray.Length; i++)
+            {
+                EventToModifiedArray[i] = ModifiedToEventArray.ToList().IndexOf(i);
+            }
+        }
         if (ModifyTypeMode == -1) return eventType;
         if (ModifyTypeMode == 0)
         {

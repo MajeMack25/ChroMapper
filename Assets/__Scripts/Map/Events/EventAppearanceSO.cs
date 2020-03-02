@@ -24,7 +24,7 @@ public class EventAppearanceSO : ScriptableObject
         e.UpdateAlpha(final ? 1.0f : 0.6f);
         e.UpdateScale(final ? 0.75f : 0.6f);
         foreach (TextMeshProUGUI t in e.GetComponentsInChildren<TextMeshProUGUI>()) Destroy(t.transform.parent.gameObject);
-        if (e.eventData.IsRotationEvent || e.eventData.IsLaserSpeedEvent)
+        if (e.eventData.IsRotationEvent || e.eventData.IsLaserSpeedEvent || e.eventData.IsBPMChangeEvent)
         {
             GameObject instantiate = Instantiate(LaserSpeedPrefab, e.transform);
             Canvas canvas = instantiate.GetComponentInChildren<Canvas>();
@@ -36,7 +36,14 @@ public class EventAppearanceSO : ScriptableObject
                 int? rotation = e.eventData.GetRotationDegreeFromValue();
                 text.text = rotation != null ? $"{rotation}°" : "Invalid Rotation";
             }
-            else text.text = e.eventData._value.ToString();
+            else if (e.eventData.IsBPMChangeEvent)
+            {
+                text.text = $"{e.eventData._value} BPM";
+            }
+            else
+            {
+                text.text = e.eventData._value.ToString();
+            }
             text.rectTransform.localScale = Vector3.one * (2f / 3);
         }
         if (e.eventData.IsUtilityEvent)

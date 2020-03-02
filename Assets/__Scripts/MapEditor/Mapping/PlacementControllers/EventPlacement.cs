@@ -54,6 +54,10 @@ public class EventPlacement : PlacementController<MapEvent, BeatmapEventContaine
             if (propID >= 0)
             {
                 if (queuedData._customData is null) queuedData._customData = new SimpleJSON.JSONObject();
+                if (queuedData._customData == null)
+                {
+                    queuedData._customData = new SimpleJSON.JSONObject();
+                }
                 queuedData._customData["_propID"] = propID;
             }
             else queuedData._customData?.Remove("_propID");

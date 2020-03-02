@@ -32,6 +32,10 @@ public class CreateEventTypeLabels : MonoBehaviour {
                         instantiate.GetComponentInChildren<TextMeshProUGUI>().text = "Small Ring Zoom";
                         instantiate.GetComponentInChildren<TextMeshProUGUI>().font = UtilityAsset;
                         break;
+                    case 10:
+                        instantiate.GetComponentInChildren<TextMeshProUGUI>().text = "BPM Changes";
+                        instantiate.GetComponentInChildren<TextMeshProUGUI>().font = UtilityAsset;
+                        break;
                     case 12:
                         instantiate.GetComponentInChildren<TextMeshProUGUI>().text = "Left Laser Speed";
                         instantiate.GetComponentInChildren<TextMeshProUGUI>().font = UtilityAsset;
