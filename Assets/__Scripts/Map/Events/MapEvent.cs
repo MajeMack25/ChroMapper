@@ -19,7 +19,7 @@ public class MapEvent : BeatmapObject {
     //7
     public const int EVENT_TYPE_RINGS_ROTATE = 8;
     public const int EVENT_TYPE_RINGS_ZOOM = 9;
-    //10
+    public const int EVENT_TYPE_BPM_CHANGE = 10;
     //11
     public const int EVENT_TYPE_LEFT_LASERS_SPEED = 12;
     public const int EVENT_TYPE_RIGHT_LASERS_SPEED = 13;
@@ -69,7 +69,8 @@ public class MapEvent : BeatmapObject {
     public bool IsRotationEvent => _type == EVENT_TYPE_EARLY_ROTATION || _type == EVENT_TYPE_LATE_ROTATION;
     public bool IsRingEvent => _type == EVENT_TYPE_RINGS_ROTATE || _type == EVENT_TYPE_RINGS_ZOOM;
     public bool IsLaserSpeedEvent => _type == EVENT_TYPE_LEFT_LASERS_SPEED || _type == EVENT_TYPE_RIGHT_LASERS_SPEED;
-    public bool IsUtilityEvent => IsRotationEvent || IsRingEvent || IsLaserSpeedEvent;
+    public bool IsBPMChangeEvent => _type == EVENT_TYPE_BPM_CHANGE;
+    public bool IsUtilityEvent => IsRotationEvent || IsRingEvent || IsLaserSpeedEvent || IsBPMChangeEvent;
 
     public override JSONNode ConvertToJSON() {
         JSONNode node = new JSONObject();
