@@ -108,6 +108,8 @@ GameObject:
   - component: {fileID: 114959380485549354}
   - component: {fileID: 82084598728851362}
   - component: {fileID: -6373078572602248858}
+  - component: {fileID: 233134983692895680}
+  - component: {fileID: 2980281799471094101}
   m_Layer: 0
   m_Name: MapEditor Camera
   m_TagString: MainCamera
@@ -173,14 +175,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!92 &92085261773150652
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1563302747920514}
-  m_Enabled: 1
 --- !u!124 &124824625374217058
 Behaviour:
   m_ObjectHideFlags: 0
@@ -221,6 +215,7 @@ MonoBehaviour:
   sprintMultPerSecond: 1.15
   noteGridTransform: {fileID: 0}
   _uiMode: {fileID: 0}
+  _rotationCallbackController: {fileID: 0}
   camera: {fileID: 20081004887261610}
   x: 0
   y: 0
@@ -352,3 +347,28 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+--- !u!114 &233134983692895680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563302747920514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f619c47ad4ce54449ba26536cd1a50a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 82084598728851362}
+--- !u!114 &2980281799471094101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563302747920514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d22b79f0e6bd924c8e3f6231ea4ed0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
