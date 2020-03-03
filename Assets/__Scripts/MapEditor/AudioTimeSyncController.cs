@@ -13,6 +13,7 @@ public class AudioTimeSyncController : MonoBehaviour {
     [SerializeField] GameObject moveables;
     [SerializeField] TracksManager tracksManager;
     [SerializeField] Track[] otherTracks;
+    [SerializeField] EventsContainer eventsContainer;
 
     public int gridMeasureSnapping
     {
@@ -55,6 +56,7 @@ public class AudioTimeSyncController : MonoBehaviour {
 
     public bool IsPlaying { get; private set; }
 
+    private float beatsPerMinute;
     private float offsetMS;
     public float offsetBeat { get; private set; } = -1;
     public float gridStartPosition { get; private set; } = -1;
@@ -75,6 +77,7 @@ public class AudioTimeSyncController : MonoBehaviour {
             clip = BeatSaberSongContainer.Instance.loadedSong;
             song = BeatSaberSongContainer.Instance.song;
             offsetMS = song.songTimeOffset / 1000;
+            beatsPerMinute = song.beatsPerMinute;
             ResetTime();
             offsetBeat = currentBeat;
             gridStartPosition = currentBeat * EditorScaleController.EditorScale;
@@ -83,6 +86,7 @@ public class AudioTimeSyncController : MonoBehaviour {
             waveformSource.clip = clip;
             UpdateMovables();
             LoadInitialMap.LevelLoadedEvent += OnLevelLoaded;
+            eventsContainer.BPMChangeTriggeredEvent += BPMChangeTriggered;
         }
         catch (Exception e) {
             Debug.LogException(e);
@@ -97,6 +101,7 @@ public class AudioTimeSyncController : MonoBehaviour {
     private void OnDestroy()
     {
         LoadInitialMap.LevelLoadedEvent -= OnLevelLoaded;
+        eventsContainer.BPMChangeTriggeredEvent -= BPMChangeTriggered;
     }
 
     private void Update() {
@@ -105,7 +110,7 @@ public class AudioTimeSyncController : MonoBehaviour {
             if (!levelLoaded) return;
             if (IsPlaying)
             {
-                CurrentSeconds = songAudioSource.time - offsetMS;
+                CurrentBeat = eventsContainer.GetModifiedBeatFromSeconds(songAudioSource.time - offsetMS);
                 if (!songAudioSource.isPlaying) TogglePlaying();
             }
             else if (!(PauseManager.IsPaused || OptionsController.IsActive) && !NodeEditorController.IsActive)
@@ -186,7 +191,7 @@ public class AudioTimeSyncController : MonoBehaviour {
 
     public void MoveToTimeInSeconds(float seconds) {
         if (IsPlaying) return;
-        CurrentSeconds = seconds;
+        CurrentBeat = eventsContainer.GetModifiedBeatFromSeconds(seconds);
         songAudioSource.time = CurrentSeconds + offsetMS;
     }
 
@@ -196,9 +201,16 @@ public class AudioTimeSyncController : MonoBehaviour {
         songAudioSource.time = CurrentSeconds + offsetBeat;
     }
 
-    public float GetBeatFromSeconds(float seconds) => song.beatsPerMinute / 60 * seconds;
+    public float GetBeatFromSeconds(float seconds) => beatsPerMinute / 60 * seconds;
 
-    public float GetSecondsFromBeat(float beat) => 60 / song.beatsPerMinute * beat;
+    public float GetSecondsFromBeat(float beat) => 60 / beatsPerMinute * beat;
+
+    private void BPMChangeTriggered(float newBeatsPerMinute)
+    {
+        float currentBeat = CurrentBeat;
+        beatsPerMinute = newBeatsPerMinute;
+        MoveToTimeInBeats(currentBeat);
+    }
 
     private void ValidatePosition() {
         if (currentSeconds < offsetMS) currentSeconds = offsetMS;

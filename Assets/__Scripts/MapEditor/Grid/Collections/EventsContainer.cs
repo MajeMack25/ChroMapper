@@ -28,7 +28,7 @@ public class EventsContainer : BeatmapObjectContainerCollection
     }
     private bool ringPropagationEditing = false;
 
-    public Action<int> BPMChangeTriggeredEvent;
+    public Action<float> BPMChangeTriggeredEvent;
 
     internal override void SubscribeToCallbacks()
     {
@@ -100,7 +100,7 @@ public class EventsContainer : BeatmapObjectContainerCollection
         MapEvent e = objectData as MapEvent;
         if (e._type == MapEvent.EVENT_TYPE_BPM_CHANGE)
         {
-            Debug.Log($"We got a bpm change of {FindLastBPM()._value} BPM");
+            Debug.Log($"We got a bpm change of {FindLastBPM()} BPM");
             BPMChangeTriggeredEvent?.Invoke(e._value);
         }
     }
@@ -125,7 +125,7 @@ public class EventsContainer : BeatmapObjectContainerCollection
                     && e.objectData._time >= AudioTimeSyncController.CurrentBeat + DespawnCallbackController.offset;
                 e.SafeSetActive(enabled);
             }
-            BPMChangeTriggeredEvent?.Invoke(FindLastBPM()._value);
+            BPMChangeTriggeredEvent?.Invoke(FindLastBPM());
         }
     }
 
@@ -134,14 +134,27 @@ public class EventsContainer : BeatmapObjectContainerCollection
         OnPlayToggle(AudioTimeSyncController.IsPlaying);
     }
 
-    public MapEvent FindLastBPM()
+    public float FindLastBPM()
     {
+        float initialBPM = BeatSaberSongContainer.Instance.song.beatsPerMinute;
         IEnumerable<MapEvent> bpmChanges = LoadedContainers.Select(x => x.objectData).Cast<MapEvent>().Where(x => x.IsBPMChangeEvent);
-        if (!bpmChanges.Any())
+        if (!bpmChanges.Any(x => x._time <= initialBPM / 60 * AudioTimeSyncController.CurrentSeconds)) return initialBPM;
+        return bpmChanges.LastOrDefault(x => x._time <= AudioTimeSyncController.CurrentSeconds * initialBPM)._value;
+    }
+
+    public float GetModifiedBeatFromSeconds(float seconds)
+    {
+        float initialBPM = BeatSaberSongContainer.Instance.song.beatsPerMinute;
+        float initialBeat = initialBPM / 60f * seconds;
+        List<MapEvent> bpmChanges = LoadedContainers.Select(x => x.objectData).Cast<MapEvent>()
+            .Where(x => x.IsBPMChangeEvent && x._time <= initialBeat).ToList();
+        if (!bpmChanges.Any()) return initialBeat;
+        float beat = bpmChanges.FirstOrDefault()._time;
+        for (int i = 0; i < bpmChanges.Count() - 1; i++)
         {
-            return new MapEvent(0, MapEvent.EVENT_TYPE_BPM_CHANGE, Mathf.RoundToInt(BeatSaberSongContainer.Instance.song.beatsPerMinute));
+            beat += (bpmChanges[i]._value / 60f) * (60f / initialBPM * (bpmChanges[i + 1]._time - bpmChanges[i]._time));
         }
-        return bpmChanges.LastOrDefault(x => x._time <= AudioTimeSyncController.CurrentBeat);
+        return beat += (bpmChanges.Last()._value / 60f) * (60f / initialBPM * (initialBeat - bpmChanges.Last()._time));
     }
 
     public override BeatmapObjectContainer SpawnObject(BeatmapObject obj, out BeatmapObjectContainer conflicting, bool removeConflicting = false, bool refreshMap = true)
